@@ -35,17 +35,17 @@ function resetDailyCounter() {
 // إرسال الطلب
 async function sendOrder() {
 
-  if (dailyTotal >= 1000) {
-    console.log("Daily limit reached (1000). Waiting for reset.");
+  if (dailyTotal >= 2000) {
+    console.log("Daily limit reached (2000). Waiting for reset.");
     scheduleNext(30); // يفحص بعد 30 دقيقة
     return;
   }
 
   const quantity = randomBetween(10, 20);
 
-  if (dailyTotal + quantity > 1000) {
+  if (dailyTotal + quantity > 2000) {
     console.log("Skipping order to avoid exceeding daily limit.");
-    scheduleNext(randomBetween(10,30));
+    scheduleNext(randomBetween(5,15));
     return;
   }
 
@@ -68,7 +68,7 @@ async function sendOrder() {
     console.error("Error:", err.message);
   }
 
-  scheduleNext(randomBetween(10, 30));
+  scheduleNext(randomBetween(5, 15));
 }
 
 // جدولة
@@ -97,5 +97,5 @@ app.get("/status", (req, res) => {
 app.listen(PORT, () => {
   console.log("Server running on port", PORT);
   resetDailyCounter();
-  scheduleNext(randomBetween(10,30)); // أول تشغيل سريع
+  scheduleNext(randomBetween(3,5)); // أول تشغيل سريع
 });
