@@ -68,7 +68,7 @@ async function sendOrder() {
     console.error("Error:", err.message);
   }
 
-  scheduleNext(randomBetween(5, 15));
+  scheduleNext(randomBetween(10, 30));
 }
 
 // جدولة
@@ -97,5 +97,5 @@ app.get("/status", (req, res) => {
 app.listen(PORT, () => {
   console.log("Server running on port", PORT);
   resetDailyCounter();
-  scheduleNext(randomBetween(1,3)); // أول تشغيل سريع
+  scheduleNext(randomBetween(10,30)); // أول تشغيل سريع
 });
