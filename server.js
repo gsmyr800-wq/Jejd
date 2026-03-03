@@ -45,7 +45,7 @@ async function sendOrder() {
 
   if (dailyTotal + quantity > 1000) {
     console.log("Skipping order to avoid exceeding daily limit.");
-    scheduleNext(randomBetween(5,15));
+    scheduleNext(randomBetween(10,30));
     return;
   }
 
