@@ -35,7 +35,7 @@ function resetDailyCounter() {
 // إرسال الطلب
 async function sendOrder() {
 
-  if (dailyTotal >= 2000) {
+  if (dailyTotal >= 5000) {
     console.log("Daily limit reached (2000). Waiting for reset.");
     scheduleNext(30); // يفحص بعد 30 دقيقة
     return;
@@ -43,7 +43,7 @@ async function sendOrder() {
 
   const quantity = randomBetween(10, 20);
 
-  if (dailyTotal + quantity > 2000) {
+  if (dailyTotal + quantity > 5000) {
     console.log("Skipping order to avoid exceeding daily limit.");
     scheduleNext(randomBetween(5,15));
     return;
