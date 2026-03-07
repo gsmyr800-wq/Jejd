@@ -104,7 +104,7 @@ async function sendOrderService2() {
 
   if (dailyTotalService2 + quantity > 5000) {
     console.log("Service 2 skipping to avoid exceeding limit.");
-    scheduleNextService2(randomBetween(15, 40));
+    scheduleNextService2(randomBetween(7, 15));
     return;
   }
 
@@ -127,7 +127,7 @@ async function sendOrderService2() {
     console.error("Service 2 Error:", err.message);
   }
 
-  scheduleNextService2(randomBetween(15, 40));
+  scheduleNextService2(randomBetween(7, 15));
 }
 
 function scheduleNextService2(minutes) {
@@ -171,5 +171,5 @@ app.listen(PORT, () => {
 
   // تشغيل أولي سريع
   scheduleNext(randomBetween(3, 5));
-  scheduleNextService2(randomBetween(15, 30));
+  scheduleNextService2(randomBetween(3, 5));
 });
