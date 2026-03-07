@@ -198,8 +198,8 @@ function scheduleNext(minutes) {
   nextRunTime = new Date(Date.now() + delay);
   console.log("Service 1 next run in", minutes, "minutes");
 
-  // شغّل Service 3 بعد نصف الوقت
-  setTimeout(sendOrderService3, delay / 2);
+  // شغّل Service 3 بعد ضعف الوقت
+  setTimeout(sendOrderService3, delay * 2);
 
   setTimeout(sendOrder, delay);
 }
