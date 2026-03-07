@@ -56,324 +56,217 @@ let next2 = null;
 // RANDOM
 // =====================
 function rand(min,max){
- return Math.floor(Math.random()*(max-min+1))+min;
+  return Math.floor(Math.random()*(max-min+1))+min;
 }
 
 // =====================
-// توزيع ذكي
+// SMART DELAY
 // =====================
 function smartDelay(total,limit){
-
- const remaining = Math.max(limit-total,1);
-
- const avgOrder = 20;
-
- const ordersLeft = Math.max(Math.floor(remaining/avgOrder),1);
-
- const minutesPassed =
-  new Date().getHours()*60 + new Date().getMinutes();
-
- const minutesLeft = Math.max(1440-minutesPassed,1);
-
- const ideal = Math.floor(minutesLeft/ordersLeft);
-
- return rand(Math.max(ideal-5,1),ideal+5);
-
+  const remaining = Math.max(limit-total,1);
+  const avgOrder = 20;
+  const ordersLeft = Math.max(Math.floor(remaining/avgOrder),1);
+  const minutesPassed = new Date().getHours()*60 + new Date().getMinutes();
+  const minutesLeft = Math.max(1440-minutesPassed,1);
+  const ideal = Math.floor(minutesLeft/ordersLeft);
+  return rand(Math.max(ideal-5,1),ideal+5);
 }
 
 // =====================
-// منع التصادم
-// =====================
-function randomSpread(maxMin){
-
- return rand(1,Math.max(maxMin-1,1));
-
-}
-
-// =====================
-// RESET
+// RESET DAILY
 // =====================
 function resetDaily(){
+  const now = new Date();
+  const midnight = new Date();
+  midnight.setHours(24,0,0,0);
+  const ms = midnight-now;
 
- const now = new Date();
- const midnight = new Date();
- midnight.setHours(24,0,0,0);
+  setTimeout(()=>{
+    total1=0;
+    total2=0;
+    total3=0;
+    total4=0;
+    total5=0;
 
- const ms = midnight-now;
+    limit2 = rand(1000,1200);
+    limit4 = rand(1000,1200);
+    limit5 = rand(1000,1200);
 
- setTimeout(()=>{
+    console.log("Daily reset");
 
-  total1=0;
-  total2=0;
-  total3=0;
-  total4=0;
-  total5=0;
-
-  limit2 = rand(1000,1200);
-  limit4 = rand(1000,1200);
-  limit5 = rand(1000,1200);
-
-  console.log("Daily reset");
-
-  resetDaily();
-
- },ms);
-
+    resetDaily();
+  },ms);
 }
 
 // =====================
-// SERVICE 1
+// SERVICE FUNCTIONS
 // =====================
 async function service1(){
+  if(!ENABLE_SERVICE_1){
+    schedule1(rand(5,15));
+    return;
+  }
 
- if(!ENABLE_SERVICE_1){
+  const quantity = rand(10,20);
+
+  try{
+    await axios.post(API_URL,{
+      key:API_KEY,
+      action:"add",
+      service:SERVICE_ID,
+      link:LINK,
+      quantity
+    });
+    total1+=quantity;
+    console.log("S1",quantity,"Total:",total1);
+  }catch(e){
+    console.log("S1 error");
+  }
+
   schedule1(rand(5,15));
-  return;
- }
-
- const quantity = rand(10,20);
-
- try{
-
-  await axios.post(API_URL,{
-   key:API_KEY,
-   action:"add",
-   service:SERVICE_ID,
-   link:LINK,
-   quantity
-  });
-
-  total1+=quantity;
-
-  console.log("S1",quantity);
-
- }catch(e){
-
-  console.log("S1 error");
-
- }
-
- schedule1(rand(5,15));
-
 }
 
-// =====================
-// SERVICE 2
-// =====================
 async function service2(){
+  if(!ENABLE_SERVICE_2){
+    schedule2(rand(7,15));
+    return;
+  }
 
- if(!ENABLE_SERVICE_2){
-  schedule2(rand(7,15));
-  return;
- }
+  const quantity = rand(10,30);
 
- const quantity = rand(10,30);
+  try{
+    await axios.post(API_URL,{
+      key:API_KEY,
+      action:"add",
+      service:SERVICE_ID_2,
+      link:LINK,
+      quantity
+    });
+    total2+=quantity;
+    console.log("S2",quantity,"Total:",total2,"/",limit2);
+  }catch(e){
+    console.log("S2 error");
+  }
 
- try{
-
-  await axios.post(API_URL,{
-   key:API_KEY,
-   action:"add",
-   service:SERVICE_ID_2,
-   link:LINK,
-   quantity
-  });
-
-  total2+=quantity;
-
-  console.log("S2",quantity,"/",limit2);
-
- }catch(e){
-
-  console.log("S2 error");
-
- }
-
- schedule2(smartDelay(total2,limit2));
-
+  schedule2(smartDelay(total2,limit2));
 }
 
-// =====================
-// SERVICE 3
-// =====================
 async function service3(){
+  if(!ENABLE_SERVICE_3) return;
 
- if(!ENABLE_SERVICE_3) return;
+  const quantity = rand(10,20);
 
- const quantity = rand(10,20);
-
- try{
-
-  await axios.post(API_URL,{
-   key:API_KEY,
-   action:"add",
-   service:SERVICE_ID_3,
-   link:LINK,
-   quantity
-  });
-
-  total3+=quantity;
-
-  console.log("S3",quantity);
-
- }catch(e){
-
-  console.log("S3 error");
-
- }
-
+  try{
+    await axios.post(API_URL,{
+      key:API_KEY,
+      action:"add",
+      service:SERVICE_ID_3,
+      link:LINK,
+      quantity
+    });
+    total3+=quantity;
+    console.log("S3",quantity,"Total:",total3);
+  }catch(e){
+    console.log("S3 error");
+  }
 }
 
-// =====================
-// SERVICE 4
-// =====================
 async function service4(){
+  if(!ENABLE_SERVICE_4) return;
 
- if(!ENABLE_SERVICE_4) return;
+  const quantity = rand(10,30);
 
- const quantity = rand(10,30);
-
- try{
-
-  await axios.post(API_URL_2,{
-   key:API_KEY_2,
-   action:"add",
-   service:SERVICE_ID_4,
-   link:LINK,
-   quantity
-  });
-
-  total4+=quantity;
-
-  console.log("S4",quantity,"/",limit4);
-
- }catch(e){
-
-  console.log("S4 error");
-
- }
-
+  try{
+    await axios.post(API_URL_2,{
+      key:API_KEY_2,
+      action:"add",
+      service:SERVICE_ID_4,
+      link:LINK,
+      quantity
+    });
+    total4+=quantity;
+    console.log("S4",quantity,"Total:",total4,"/",limit4);
+  }catch(e){
+    console.log("S4 error");
+  }
 }
 
-// =====================
-// SERVICE 5
-// =====================
 async function service5(){
+  if(!ENABLE_SERVICE_5) return;
 
- if(!ENABLE_SERVICE_5) return;
+  const quantity = rand(10,30);
 
- const quantity = rand(10,30);
-
- try{
-
-  await axios.post(API_URL_2,{
-   key:API_KEY_2,
-   action:"add",
-   service:SERVICE_ID_5,
-   link:LINK,
-   quantity
-  });
-
-  total5+=quantity;
-
-  console.log("S5",quantity,"/",limit5);
-
- }catch(e){
-
-  console.log("S5 error");
-
- }
-
+  try{
+    await axios.post(API_URL_2,{
+      key:API_KEY_2,
+      action:"add",
+      service:SERVICE_ID_5,
+      link:LINK,
+      quantity
+    });
+    total5+=quantity;
+    console.log("S5",quantity,"Total:",total5,"/",limit5);
+  }catch(e){
+    console.log("S5 error");
+  }
 }
 
 // =====================
-// SCHEDULER 1
+// SCHEDULERS
 // =====================
 function schedule1(min){
+  const delay = min*60*1000;
+  next1 = new Date(Date.now()+delay);
 
- const delay = min*60*1000;
+  if(ENABLE_SERVICE_3){
+    setTimeout(service3,delay*2);
+  }
 
- next1 = new Date(Date.now()+delay);
-
- if(ENABLE_SERVICE_3){
-  setTimeout(service3,delay*2);
- }
-
- setTimeout(service1,delay);
-
+  setTimeout(service1,delay);
 }
 
-// =====================
-// SCHEDULER 2
-// =====================
 function schedule2(min){
+  const delay = min*60*1000;
+  next2 = new Date(Date.now()+delay);
 
- const delay = min*60*1000;
+  if(ENABLE_SERVICE_4){
+    const d4 = rand(Math.floor(delay*0.1), Math.floor(delay*0.9));
+    setTimeout(service4,d4);
+  }
 
- next2 = new Date(Date.now()+delay);
+  if(ENABLE_SERVICE_5){
+    const d5 = rand(Math.floor(delay*0.2), Math.floor(delay));
+    setTimeout(service5,d5);
+  }
 
- if(ENABLE_SERVICE_4){
-
-  const d4 = randomSpread(min)*60*1000;
-  setTimeout(service4,d4);
-
- }
-
- if(ENABLE_SERVICE_5){
-
-  const d5 = randomSpread(min)*60*1000;
-  setTimeout(service5,d5);
-
- }
-
- setTimeout(service2,delay);
-
+  setTimeout(service2,delay);
 }
 
 // =====================
 // ROUTES
 // =====================
 app.get("/",(req,res)=>{
- res.send("Bot running");
+  res.send("Bot running");
 });
 
 app.get("/status",(req,res)=>{
-
- res.json({
-
-  service1:total1,
-
-  service2:{
-   total:total2,
-   target:limit2
-  },
-
-  service3:total3,
-
-  service4:{
-   total:total4,
-   target:limit4
-  },
-
-  service5:{
-   total:total5,
-   target:limit5
-  }
-
- });
-
+  res.json({
+    service1:total1,
+    service2:{total:total2,target:limit2},
+    service3:total3,
+    service4:{total:total4,target:limit4},
+    service5:{total:total5,target:limit5}
+  });
 });
 
 // =====================
-// START
+// START SERVER
 // =====================
 app.listen(PORT,()=>{
+  console.log("Server started");
 
- console.log("Server started");
+  resetDaily();
 
- resetDaily();
-
- schedule1(rand(3,5));
- schedule2(rand(3,5));
-
+  schedule1(rand(3,5));
+  schedule2(rand(3,5));
 });
