@@ -17,6 +17,14 @@ const SERVICE_ID_3 = process.env.SERVICE_ID_3;   // الخدمة 3 (موازية
 const SERVICE_ID_4 = process.env.SERVICE_ID_4;   // الخدمة 4 (موازية 2)
 
 // =====================
+// متغيرات تمكين الخدمات
+// =====================
+const ENABLE_SERVICE_1 = !!SERVICE_ID;
+const ENABLE_SERVICE_2 = !!SERVICE_ID_2;
+const ENABLE_SERVICE_3 = !!SERVICE_ID_3;
+const ENABLE_SERVICE_4 = !!SERVICE_ID_4;
+
+// =====================
 // عدادات يومية
 // =====================
 let dailyTotal = 0;
@@ -30,18 +38,14 @@ let nextRunTimeService2 = null;
 // =====================
 // دوال مساعدة
 // =====================
-
-// رقم عشوائي بين min و max
 function randomBetween(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-// إعادة تعيين العدادات يومياً عند منتصف الليل
 function resetDailyCounter() {
   const now = new Date();
   const midnight = new Date();
   midnight.setHours(24, 0, 0, 0);
-
   const timeUntilMidnight = midnight - now;
 
   setTimeout(() => {
@@ -58,6 +62,12 @@ function resetDailyCounter() {
 // SERVICE 1
 // =====================
 async function sendOrder() {
+  if (!ENABLE_SERVICE_1) {
+    console.log("Service 1 is disabled. Skipping...");
+    scheduleNext(randomBetween(5, 15));
+    return;
+  }
+
   if (dailyTotal >= 5000) {
     console.log("Service 1 daily limit reached. Waiting...");
     scheduleNext(30);
@@ -77,9 +87,8 @@ async function sendOrder() {
       action: "add",
       service: SERVICE_ID,
       link: LINK,
-      quantity: quantity
+      quantity
     });
-
     dailyTotal += quantity;
     console.log("Service 1 Sent:", quantity);
     console.log("Service 1 Daily total:", dailyTotal);
@@ -93,6 +102,12 @@ async function sendOrder() {
 // SERVICE 2
 // =====================
 async function sendOrderService2() {
+  if (!ENABLE_SERVICE_2) {
+    console.log("Service 2 is disabled. Skipping...");
+    scheduleNextService2(randomBetween(7, 15));
+    return;
+  }
+
   if (dailyTotalService2 >= 5000) {
     console.log("Service 2 daily limit reached. Waiting...");
     scheduleNextService2(30);
@@ -112,9 +127,8 @@ async function sendOrderService2() {
       action: "add",
       service: SERVICE_ID_2,
       link: LINK,
-      quantity: quantity
+      quantity
     });
-
     dailyTotalService2 += quantity;
     console.log("Service 2 Sent:", quantity);
     console.log("Service 2 Daily total:", dailyTotalService2);
@@ -128,6 +142,8 @@ async function sendOrderService2() {
 // SERVICE 3 (موازية 1)
 // =====================
 async function sendOrderService3() {
+  if (!ENABLE_SERVICE_3) return;
+
   if (dailyTotalService3 >= 5000) {
     console.log("Service 3 daily limit reached.");
     return;
@@ -145,9 +161,8 @@ async function sendOrderService3() {
       action: "add",
       service: SERVICE_ID_3,
       link: LINK,
-      quantity: quantity
+      quantity
     });
-
     dailyTotalService3 += quantity;
     console.log("Service 3 Sent:", quantity);
     console.log("Service 3 Daily total:", dailyTotalService3);
@@ -161,6 +176,8 @@ async function sendOrderService3() {
 // SERVICE 4 (موازية 2)
 // =====================
 async function sendOrderService4() {
+  if (!ENABLE_SERVICE_4) return;
+
   if (dailyTotalService4 >= 5000) {
     console.log("Service 4 daily limit reached.");
     return;
@@ -178,9 +195,8 @@ async function sendOrderService4() {
       action: "add",
       service: SERVICE_ID_4,
       link: LINK,
-      quantity: quantity
+      quantity
     });
-
     dailyTotalService4 += quantity;
     console.log("Service 4 Sent:", quantity);
     console.log("Service 4 Daily total:", dailyTotalService4);
@@ -191,15 +207,15 @@ async function sendOrderService4() {
 }
 
 // =====================
-// جدولة الخدمات مع نصف وقت التناوب
+// جدولة الخدمات
 // =====================
 function scheduleNext(minutes) {
   const delay = minutes * 60 * 1000;
   nextRunTime = new Date(Date.now() + delay);
   console.log("Service 1 next run in", minutes, "minutes");
 
-  // شغّل Service 3 بعد ضعف الوقت
-  setTimeout(sendOrderService3, delay * 2);
+  // Service 3 بعد ضعف وقت Service 1
+  if (ENABLE_SERVICE_3) setTimeout(sendOrderService3, delay * 2);
 
   setTimeout(sendOrder, delay);
 }
@@ -209,8 +225,8 @@ function scheduleNextService2(minutes) {
   nextRunTimeService2 = new Date(Date.now() + delay);
   console.log("Service 2 next run in", minutes, "minutes");
 
-  // شغّل Service 4 بعد نصف الوقت
-  setTimeout(sendOrderService4, delay / 2);
+  // Service 4 بعد نصف وقت Service 2
+  if (ENABLE_SERVICE_4) setTimeout(sendOrderService4, delay / 2);
 
   setTimeout(sendOrderService2, delay);
 }
