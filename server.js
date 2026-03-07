@@ -5,309 +5,375 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // =====================
-// متغيرات البيئة
+// ENV
 // =====================
 const API_URL = process.env.API_URL;
 const API_KEY = process.env.API_KEY;
+
+const API_URL_2 = process.env.API_URL_2;
+const API_KEY_2 = process.env.API_KEY_2;
+
 const LINK = process.env.LINK;
 
 const SERVICE_ID = process.env.SERVICE_ID;
 const SERVICE_ID_2 = process.env.SERVICE_ID_2;
 const SERVICE_ID_3 = process.env.SERVICE_ID_3;
 const SERVICE_ID_4 = process.env.SERVICE_ID_4;
+const SERVICE_ID_5 = process.env.SERVICE_ID_5;
 
 // =====================
-// تمكين الخدمات
+// ENABLE
 // =====================
 const ENABLE_SERVICE_1 = !!SERVICE_ID;
 const ENABLE_SERVICE_2 = !!SERVICE_ID_2;
 const ENABLE_SERVICE_3 = !!SERVICE_ID_3;
 const ENABLE_SERVICE_4 = !!SERVICE_ID_4;
+const ENABLE_SERVICE_5 = !!SERVICE_ID_5;
 
 // =====================
-// عدادات يومية
+// TOTALS
 // =====================
-let dailyTotal = 0;
-let dailyTotalService2 = 0;
-let dailyTotalService3 = 0;
-let dailyTotalService4 = 0;
-
-let nextRunTime = null;
-let nextRunTimeService2 = null;
+let total1 = 0;
+let total2 = 0;
+let total3 = 0;
+let total4 = 0;
+let total5 = 0;
 
 // =====================
-// دوال مساعدة
+// DAILY LIMITS
 // =====================
-function randomBetween(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+let limit2 = rand(1000,1200);
+let limit4 = rand(1000,1200);
+let limit5 = rand(1000,1200);
+
+// =====================
+// NEXT RUN
+// =====================
+let next1 = null;
+let next2 = null;
+
+// =====================
+// RANDOM
+// =====================
+function rand(min,max){
+ return Math.floor(Math.random()*(max-min+1))+min;
 }
 
-function resetDailyCounter() {
-  const now = new Date();
-  const midnight = new Date();
-  midnight.setHours(24, 0, 0, 0);
+// =====================
+// توزيع ذكي
+// =====================
+function smartDelay(total,limit){
 
-  const timeUntilMidnight = midnight - now;
+ const remaining = Math.max(limit-total,1);
 
-  setTimeout(() => {
-    dailyTotal = 0;
-    dailyTotalService2 = 0;
-    dailyTotalService3 = 0;
-    dailyTotalService4 = 0;
+ const avgOrder = 20;
 
-    console.log("Daily counters reset");
+ const ordersLeft = Math.max(Math.floor(remaining/avgOrder),1);
 
-    resetDailyCounter();
-  }, timeUntilMidnight);
+ const minutesPassed =
+  new Date().getHours()*60 + new Date().getMinutes();
+
+ const minutesLeft = Math.max(1440-minutesPassed,1);
+
+ const ideal = Math.floor(minutesLeft/ordersLeft);
+
+ return rand(Math.max(ideal-5,1),ideal+5);
+
+}
+
+// =====================
+// منع التصادم
+// =====================
+function randomSpread(maxMin){
+
+ return rand(1,Math.max(maxMin-1,1));
+
+}
+
+// =====================
+// RESET
+// =====================
+function resetDaily(){
+
+ const now = new Date();
+ const midnight = new Date();
+ midnight.setHours(24,0,0,0);
+
+ const ms = midnight-now;
+
+ setTimeout(()=>{
+
+  total1=0;
+  total2=0;
+  total3=0;
+  total4=0;
+  total5=0;
+
+  limit2 = rand(1000,1200);
+  limit4 = rand(1000,1200);
+  limit5 = rand(1000,1200);
+
+  console.log("Daily reset");
+
+  resetDaily();
+
+ },ms);
+
 }
 
 // =====================
 // SERVICE 1
 // =====================
-async function sendOrder() {
+async function service1(){
 
-  if (!ENABLE_SERVICE_1) {
-    console.log("Service 1 disabled");
-    scheduleNext(randomBetween(5, 15));
-    return;
-  }
+ if(!ENABLE_SERVICE_1){
+  schedule1(rand(5,15));
+  return;
+ }
 
-  if (dailyTotal >= 5000) {
-    console.log("Service 1 daily limit reached");
-    scheduleNext(30);
-    return;
-  }
+ const quantity = rand(10,20);
 
-  const quantity = randomBetween(10, 20);
+ try{
 
-  if (dailyTotal + quantity > 5000) {
-    console.log("Service 1 skipping");
-    scheduleNext(randomBetween(5, 15));
-    return;
-  }
+  await axios.post(API_URL,{
+   key:API_KEY,
+   action:"add",
+   service:SERVICE_ID,
+   link:LINK,
+   quantity
+  });
 
-  try {
+  total1+=quantity;
 
-    const response = await axios.post(API_URL, {
-      key: API_KEY,
-      action: "add",
-      service: SERVICE_ID,
-      link: LINK,
-      quantity
-    });
+  console.log("S1",quantity);
 
-    dailyTotal += quantity;
+ }catch(e){
 
-    console.log("Service 1 Sent:", quantity);
-    console.log("Service 1 Total:", dailyTotal);
-    console.log("Response:", response.data);
+  console.log("S1 error");
 
-  } catch (err) {
+ }
 
-    console.error("Service 1 Error:", err.message);
+ schedule1(rand(5,15));
 
-  }
-
-  scheduleNext(randomBetween(5, 15));
 }
 
 // =====================
 // SERVICE 2
 // =====================
-async function sendOrderService2() {
+async function service2(){
 
-  if (!ENABLE_SERVICE_2) {
-    console.log("Service 2 disabled");
-    scheduleNextService2(randomBetween(7, 15));
-    return;
-  }
+ if(!ENABLE_SERVICE_2){
+  schedule2(rand(7,15));
+  return;
+ }
 
-  if (dailyTotalService2 >= 5000) {
-    console.log("Service 2 daily limit reached");
-    scheduleNextService2(30);
-    return;
-  }
+ const quantity = rand(10,30);
 
-  const quantity = randomBetween(10, 20);
+ try{
 
-  if (dailyTotalService2 + quantity > 5000) {
-    console.log("Service 2 skipping");
-    scheduleNextService2(randomBetween(7, 15));
-    return;
-  }
+  await axios.post(API_URL,{
+   key:API_KEY,
+   action:"add",
+   service:SERVICE_ID_2,
+   link:LINK,
+   quantity
+  });
 
-  try {
+  total2+=quantity;
 
-    const response = await axios.post(API_URL, {
-      key: API_KEY,
-      action: "add",
-      service: SERVICE_ID_2,
-      link: LINK,
-      quantity
-    });
+  console.log("S2",quantity,"/",limit2);
 
-    dailyTotalService2 += quantity;
+ }catch(e){
 
-    console.log("Service 2 Sent:", quantity);
-    console.log("Service 2 Total:", dailyTotalService2);
-    console.log("Response:", response.data);
+  console.log("S2 error");
 
-  } catch (err) {
+ }
 
-    console.error("Service 2 Error:", err.message);
+ schedule2(smartDelay(total2,limit2));
 
-  }
-
-  scheduleNextService2(randomBetween(7, 15));
 }
 
 // =====================
 // SERVICE 3
 // =====================
-async function sendOrderService3() {
+async function service3(){
 
-  if (!ENABLE_SERVICE_3) return;
+ if(!ENABLE_SERVICE_3) return;
 
-  if (dailyTotalService3 >= 5000) {
-    console.log("Service 3 limit reached");
-    return;
-  }
+ const quantity = rand(10,20);
 
-  const quantity = randomBetween(10, 20);
+ try{
 
-  if (dailyTotalService3 + quantity > 5000) {
-    console.log("Service 3 skipping");
-    return;
-  }
+  await axios.post(API_URL,{
+   key:API_KEY,
+   action:"add",
+   service:SERVICE_ID_3,
+   link:LINK,
+   quantity
+  });
 
-  try {
+  total3+=quantity;
 
-    const response = await axios.post(API_URL, {
-      key: API_KEY,
-      action: "add",
-      service: SERVICE_ID_3,
-      link: LINK,
-      quantity
-    });
+  console.log("S3",quantity);
 
-    dailyTotalService3 += quantity;
+ }catch(e){
 
-    console.log("Service 3 Sent:", quantity);
-    console.log("Service 3 Total:", dailyTotalService3);
+  console.log("S3 error");
 
-  } catch (err) {
-
-    console.error("Service 3 Error:", err.message);
-
-  }
+ }
 
 }
 
 // =====================
 // SERVICE 4
 // =====================
-async function sendOrderService4() {
+async function service4(){
 
-  if (!ENABLE_SERVICE_4) return;
+ if(!ENABLE_SERVICE_4) return;
 
-  if (dailyTotalService4 >= 5000) {
-    console.log("Service 4 limit reached");
-    return;
-  }
+ const quantity = rand(10,30);
 
-  const quantity = randomBetween(10, 20);
+ try{
 
-  if (dailyTotalService4 + quantity > 5000) {
-    console.log("Service 4 skipping");
-    return;
-  }
+  await axios.post(API_URL_2,{
+   key:API_KEY_2,
+   action:"add",
+   service:SERVICE_ID_4,
+   link:LINK,
+   quantity
+  });
 
-  try {
+  total4+=quantity;
 
-    const response = await axios.post(API_URL, {
-      key: API_KEY,
-      action: "add",
-      service: SERVICE_ID_4,
-      link: LINK,
-      quantity
-    });
+  console.log("S4",quantity,"/",limit4);
 
-    dailyTotalService4 += quantity;
+ }catch(e){
 
-    console.log("Service 4 Sent:", quantity);
-    console.log("Service 4 Total:", dailyTotalService4);
+  console.log("S4 error");
 
-  } catch (err) {
-
-    console.error("Service 4 Error:", err.message);
-
-  }
+ }
 
 }
 
 // =====================
-// جدولة الخدمات
+// SERVICE 5
 // =====================
-function scheduleNext(minutes) {
+async function service5(){
 
-  const delay = minutes * 60 * 1000;
+ if(!ENABLE_SERVICE_5) return;
 
-  nextRunTime = new Date(Date.now() + delay);
+ const quantity = rand(10,30);
 
-  console.log("Service 1 next run in", minutes, "minutes");
+ try{
 
-  if (ENABLE_SERVICE_3) {
-    setTimeout(sendOrderService3, delay * 2);
-  }
+  await axios.post(API_URL_2,{
+   key:API_KEY_2,
+   action:"add",
+   service:SERVICE_ID_5,
+   link:LINK,
+   quantity
+  });
 
-  setTimeout(sendOrder, delay);
+  total5+=quantity;
+
+  console.log("S5",quantity,"/",limit5);
+
+ }catch(e){
+
+  console.log("S5 error");
+
+ }
 
 }
 
-function scheduleNextService2(minutes) {
+// =====================
+// SCHEDULER 1
+// =====================
+function schedule1(min){
 
-  const delay = minutes * 60 * 1000;
+ const delay = min*60*1000;
 
-  nextRunTimeService2 = new Date(Date.now() + delay);
+ next1 = new Date(Date.now()+delay);
 
-  console.log("Service 2 next run in", minutes, "minutes");
+ if(ENABLE_SERVICE_3){
+  setTimeout(service3,delay*2);
+ }
 
-  if (ENABLE_SERVICE_4) {
-    setTimeout(sendOrderService4, delay / 2);
-  }
+ setTimeout(service1,delay);
 
-  setTimeout(sendOrderService2, delay);
+}
+
+// =====================
+// SCHEDULER 2
+// =====================
+function schedule2(min){
+
+ const delay = min*60*1000;
+
+ next2 = new Date(Date.now()+delay);
+
+ if(ENABLE_SERVICE_4){
+
+  const d4 = randomSpread(min)*60*1000;
+  setTimeout(service4,d4);
+
+ }
+
+ if(ENABLE_SERVICE_5){
+
+  const d5 = randomSpread(min)*60*1000;
+  setTimeout(service5,d5);
+
+ }
+
+ setTimeout(service2,delay);
 
 }
 
 // =====================
 // ROUTES
 // =====================
-app.get("/", (req, res) => {
-  res.send("Bot is running...");
+app.get("/",(req,res)=>{
+ res.send("Bot running");
 });
 
-app.get("/status", (req, res) => {
+app.get("/status",(req,res)=>{
 
-  res.json({
-    service1: { dailyTotal, nextRun: nextRunTime },
-    service2: { dailyTotal: dailyTotalService2, nextRun: nextRunTimeService2 },
-    service3: { dailyTotal: dailyTotalService3 },
-    service4: { dailyTotal: dailyTotalService4 }
-  });
+ res.json({
+
+  service1:total1,
+
+  service2:{
+   total:total2,
+   target:limit2
+  },
+
+  service3:total3,
+
+  service4:{
+   total:total4,
+   target:limit4
+  },
+
+  service5:{
+   total:total5,
+   target:limit5
+  }
+
+ });
 
 });
 
 // =====================
-// START SERVER
+// START
 // =====================
-app.listen(PORT, () => {
+app.listen(PORT,()=>{
 
-  console.log("Server running on port", PORT);
+ console.log("Server started");
 
-  resetDailyCounter();
+ resetDaily();
 
-  scheduleNext(randomBetween(3, 5));
-  scheduleNextService2(randomBetween(3, 5));
+ schedule1(rand(3,5));
+ schedule2(rand(3,5));
 
 });
