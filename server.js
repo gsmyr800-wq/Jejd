@@ -13,10 +13,10 @@ const API_KEY_2 = process.env.API_KEY_2;
 
 const LINK = process.env.LINK;
 
-const SERVICE_ID = process.env.SERVICE_ID;
-const SERVICE_ID_2 = process.env.SERVICE_ID_2;
-const SERVICE_ID_3 = process.env.SERVICE_ID_3;
-const SERVICE_ID_4 = process.env.SERVICE_ID_4;
+const SERVICE_ID = process.env.SERVICE_ID; // service1
+const SERVICE_ID_2 = process.env.SERVICE_ID_2; // service2
+const SERVICE_ID_3 = process.env.SERVICE_ID_3; // service3
+const SERVICE_ID_4 = process.env.SERVICE_ID_4; // service4
 
 // ===== HELPERS =====
 function randomBetween(min,max){
@@ -25,20 +25,6 @@ function randomBetween(min,max){
 
 function delay(min,max){
  return randomBetween(min,max)*60*1000;
-}
-
-// تأخير قصير (burst)
-function shortDelay(){
- return randomBetween(20,60)*1000;
-}
-
-// احتمال حدوث burst
-async function maybeBurst(fn){
-
- if(Math.random()<0.15){
-  setTimeout(fn,shortDelay());
- }
-
 }
 
 // ============================
@@ -60,8 +46,6 @@ async function service1(){
 
   console.log("Service1:",quantity);
 
-  maybeBurst(service1);
-
  }catch(e){
   console.log("Service1 error",e.message);
  }
@@ -69,7 +53,7 @@ async function service1(){
 }
 
 // ============================
-// SERVICE 2 (مستقل)
+// SERVICE 2 (منصة ثانية - مستقل)
 // ============================
 async function service2(){
 
@@ -87,20 +71,11 @@ async function service2(){
 
   console.log("Service2:",quantity);
 
-  maybeBurst(service2);
-
  }catch(e){
   console.log("Service2 error",e.message);
  }
 
- let nextDelay=delay(5,15);
-
- // احتمال فترة هدوء
- if(Math.random()<0.1){
-  nextDelay+=delay(20,45);
- }
-
- setTimeout(service2,nextDelay);
+ setTimeout(service2,delay(20,45));
 }
 
 // ============================
@@ -122,8 +97,6 @@ async function service3(){
 
   console.log("Service3:",quantity);
 
-  maybeBurst(service3);
-
  }catch(e){
   console.log("Service3 error",e.message);
  }
@@ -131,7 +104,7 @@ async function service3(){
 }
 
 // ============================
-// SERVICE 4
+// SERVICE 4 (منصة ثانية)
 // ============================
 async function service4(){
 
@@ -149,8 +122,6 @@ async function service4(){
 
   console.log("Service4:",quantity);
 
-  maybeBurst(service4);
-
  }catch(e){
   console.log("Service4 error",e.message);
  }
@@ -164,13 +135,7 @@ async function startSequence(){
 
  await service1();
 
- let d=delay(5,15);
-
- if(Math.random()<0.1){
-  d+=delay(5,15);
- }
-
- setTimeout(step2,d);
+ setTimeout(step2,delay(5,15));
 
 }
 
@@ -178,13 +143,7 @@ async function step2(){
 
  await service3();
 
- let d=delay(4,20);
-
- if(Math.random()<0.1){
-  d+=delay(5,10);
- }
-
- setTimeout(step3,d);
+ setTimeout(step3,delay(4,20));
 
 }
 
@@ -192,13 +151,7 @@ async function step3(){
 
  await service4();
 
- let d=delay(10,25);
-
- if(Math.random()<0.1){
-  d+=delay(10,20);
- }
-
- setTimeout(startSequence,d);
+ setTimeout(startSequence,delay(10,25));
 
 }
 
@@ -213,7 +166,10 @@ app.listen(PORT,()=>{
 
  console.log("Server started");
 
- service2();       // النظام المستقل
- startSequence();  // التسلسل
+ // تشغيل النظام المستقل
+ service2();
+
+ // تشغيل التسلسل
+ startSequence();
 
 });
