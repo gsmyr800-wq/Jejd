@@ -4,9 +4,7 @@ const axios = require("axios");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// =====================
 // ENV
-// =====================
 const API_URL = process.env.API_URL;
 const API_KEY = process.env.API_KEY;
 
@@ -18,204 +16,204 @@ const LINK = process.env.LINK;
 const SERVICE_ID = process.env.SERVICE_ID;
 const SERVICE_ID_2 = process.env.SERVICE_ID_2;
 const SERVICE_ID_3 = process.env.SERVICE_ID_3;
+const SERVICE_ID_4 = process.env.SERVICE_ID_4;
 
-// =====================
-// SETTINGS
-// =====================
-const DAILY_TARGET = 1000;
-const MIN_Q = 10;
-const MAX_Q = 20;
-
-// =====================
-// TOTALS
-// =====================
-let total1 = 0;
-let total2 = 0;
-let total3 = 0;
-
-let next1 = null;
-let next2 = null;
-let next3 = null;
-
-// =====================
-// HELPERS
-// =====================
-function randomBetween(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+// ===== HELPERS =====
+function randomBetween(min,max){
+ return Math.floor(Math.random()*(max-min+1))+min;
 }
 
-function msUntilMidnight() {
-  const now = new Date();
-  const midnight = new Date();
-  midnight.setHours(24,0,0,0);
-  return midnight - now;
+function delay(min,max){
+ return randomBetween(min,max)*60*1000;
 }
 
-function resetDaily() {
-  setTimeout(() => {
-    total1 = 0;
-    total2 = 0;
-    total3 = 0;
-
-    console.log("Daily reset");
-
-    resetDaily();
-  }, msUntilMidnight());
+// تأخير قصير (burst)
+function shortDelay(){
+ return randomBetween(20,60)*1000;
 }
 
-function calculateDelay(total) {
+// احتمال حدوث burst
+async function maybeBurst(fn){
 
-  const remaining = DAILY_TARGET - total;
+ if(Math.random()<0.15){
+  setTimeout(fn,shortDelay());
+ }
 
-  if (remaining <= 0) return 60 * 60 * 1000;
-
-  const timeLeft = msUntilMidnight();
-
-  const estimatedOrders = remaining / ((MIN_Q + MAX_Q) / 2);
-
-  const delay = timeLeft / estimatedOrders;
-
-  const randomFactor = randomBetween(80,120) / 100;
-
-  return delay * randomFactor;
 }
 
-// =====================
+// ============================
 // SERVICE 1
-// =====================
-async function service1() {
+// ============================
+async function service1(){
 
-  if (!SERVICE_ID) return;
+ const quantity=randomBetween(10,20);
 
-  if (total1 >= DAILY_TARGET) return;
+ try{
 
-  const quantity = randomBetween(MIN_Q, MAX_Q);
-
-  try {
-
-    await axios.post(API_URL,{
-      key: API_KEY,
-      action:"add",
-      service:SERVICE_ID,
-      link:LINK,
-      quantity
-    });
-
-    total1 += quantity;
-
-    console.log("Service1:",quantity,"Total:",total1);
-
-  } catch(err){
-    console.log("Service1 Error:",err.message);
-  }
-
-  const delay = calculateDelay(total1);
-
-  next1 = new Date(Date.now()+delay);
-
-  setTimeout(service1,delay);
-}
-
-// =====================
-// SERVICE 2 (منصة ثانية)
-// =====================
-async function service2() {
-
-  if (!SERVICE_ID_2) return;
-
-  if (total2 >= DAILY_TARGET) return;
-
-  const quantity = randomBetween(MIN_Q, MAX_Q);
-
-  try {
-
-    await axios.post(API_URL_2,{
-      key:API_KEY_2,
-      action:"add",
-      service:SERVICE_ID_2,
-      link:LINK,
-      quantity
-    });
-
-    total2 += quantity;
-
-    console.log("Service2:",quantity,"Total:",total2);
-
-  } catch(err){
-    console.log("Service2 Error:",err.message);
-  }
-
-  const delay = calculateDelay(total2);
-
-  next2 = new Date(Date.now()+delay);
-
-  setTimeout(service2,delay);
-}
-
-// =====================
-// SERVICE 3
-// =====================
-async function service3() {
-
-  if (!SERVICE_ID_3) return;
-
-  if (total3 >= DAILY_TARGET) return;
-
-  const quantity = randomBetween(MIN_Q, MAX_Q);
-
-  try {
-
-    await axios.post(API_URL,{
-      key:API_KEY,
-      action:"add",
-      service:SERVICE_ID_3,
-      link:LINK,
-      quantity
-    });
-
-    total3 += quantity;
-
-    console.log("Service3:",quantity,"Total:",total3);
-
-  } catch(err){
-    console.log("Service3 Error:",err.message);
-  }
-
-  const delay = calculateDelay(total3);
-
-  next3 = new Date(Date.now()+delay);
-
-  setTimeout(service3,delay);
-}
-
-// =====================
-// ROUTES
-// =====================
-app.get("/",(req,res)=>{
-  res.send("Bot running");
-});
-
-app.get("/status",(req,res)=>{
-
-  res.json({
-    service1:{total:total1,next:next1},
-    service2:{total:total2,next:next2},
-    service3:{total:total3,next:next3}
+  await axios.post(API_URL,{
+   key:API_KEY,
+   action:"add",
+   service:SERVICE_ID,
+   link:LINK,
+   quantity
   });
 
+  console.log("Service1:",quantity);
+
+  maybeBurst(service1);
+
+ }catch(e){
+  console.log("Service1 error",e.message);
+ }
+
+}
+
+// ============================
+// SERVICE 2 (مستقل)
+// ============================
+async function service2(){
+
+ const quantity=randomBetween(10,17);
+
+ try{
+
+  await axios.post(API_URL_2,{
+   key:API_KEY_2,
+   action:"add",
+   service:SERVICE_ID_2,
+   link:LINK,
+   quantity
+  });
+
+  console.log("Service2:",quantity);
+
+  maybeBurst(service2);
+
+ }catch(e){
+  console.log("Service2 error",e.message);
+ }
+
+ let nextDelay=delay(5,15);
+
+ // احتمال فترة هدوء
+ if(Math.random()<0.1){
+  nextDelay+=delay(20,45);
+ }
+
+ setTimeout(service2,nextDelay);
+}
+
+// ============================
+// SERVICE 3
+// ============================
+async function service3(){
+
+ const quantity=randomBetween(10,16);
+
+ try{
+
+  await axios.post(API_URL,{
+   key:API_KEY,
+   action:"add",
+   service:SERVICE_ID_3,
+   link:LINK,
+   quantity
+  });
+
+  console.log("Service3:",quantity);
+
+  maybeBurst(service3);
+
+ }catch(e){
+  console.log("Service3 error",e.message);
+ }
+
+}
+
+// ============================
+// SERVICE 4
+// ============================
+async function service4(){
+
+ const quantity=randomBetween(10,17);
+
+ try{
+
+  await axios.post(API_URL_2,{
+   key:API_KEY_2,
+   action:"add",
+   service:SERVICE_ID_4,
+   link:LINK,
+   quantity
+  });
+
+  console.log("Service4:",quantity);
+
+  maybeBurst(service4);
+
+ }catch(e){
+  console.log("Service4 error",e.message);
+ }
+
+}
+
+// ============================
+// LOOP SYSTEM
+// ============================
+async function startSequence(){
+
+ await service1();
+
+ let d=delay(5,15);
+
+ if(Math.random()<0.1){
+  d+=delay(5,15);
+ }
+
+ setTimeout(step2,d);
+
+}
+
+async function step2(){
+
+ await service3();
+
+ let d=delay(4,20);
+
+ if(Math.random()<0.1){
+  d+=delay(5,10);
+ }
+
+ setTimeout(step3,d);
+
+}
+
+async function step3(){
+
+ await service4();
+
+ let d=delay(10,25);
+
+ if(Math.random()<0.1){
+  d+=delay(10,20);
+ }
+
+ setTimeout(startSequence,d);
+
+}
+
+// ============================
+// SERVER
+// ============================
+app.get("/",(req,res)=>{
+ res.send("Bot running");
 });
 
-// =====================
-// START
-// =====================
 app.listen(PORT,()=>{
 
-  console.log("Server running on",PORT);
+ console.log("Server started");
 
-  resetDaily();
-
-  service1();
-  service2();
-  service3();
+ service2();       // النظام المستقل
+ startSequence();  // التسلسل
 
 });
