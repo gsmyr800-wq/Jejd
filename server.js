@@ -52,7 +52,7 @@ async function service1(){
 // SERVICE 2 (منصة ثانية - مستقل)
 // ============================
 async function service2(){
- const quantity=randomBetween(15,26);
+ const quantity=randomBetween(10,26);
  try{
   await axios.post(API_URL_2,{
    key:API_KEY_2,
