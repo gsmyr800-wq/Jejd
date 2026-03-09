@@ -52,7 +52,7 @@ async function service1(){
 // SERVICE 2 (منصة ثانية - مستقل)
 // ============================
 async function service2(){
- const quantity=randomBetween(10,17);
+ const quantity=randomBetween(15,26);
  try{
   await axios.post(API_URL_2,{
    key:API_KEY_2,
@@ -65,7 +65,7 @@ async function service2(){
  }catch(e){
   console.log("Service2 error",e.message);
  }
- setTimeout(service2,delay(20,45));
+ setTimeout(service2,delay(6,30));
 }
 
 // ============================
