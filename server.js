@@ -88,13 +88,13 @@ async function service3(){
 }
 
 // ============================
-// SERVICE 4 (منصة ثانية - رابط البوت)
+// SERVICE 4 (المنصة الأولى - رابط البوت)
 // ============================
 async function service4(){
  const quantity=randomBetween(10,17);
  try{
-  await axios.post(API_URL_2,{
-   key:API_KEY_2,
+  await axios.post(API_URL,{
+   key:API_KEY,
    action:"add",
    service:SERVICE_ID_4,
    link:LINK_BOT,
@@ -107,13 +107,13 @@ async function service4(){
 }
 
 // ============================
-// SERVICE 5 (منصة ثانية - رابط البوت)
+// SERVICE 5 (المنصة الأولى - رابط البوت)
 // ============================
 async function service5(){
  const quantity=randomBetween(10,17);
  try{
-  await axios.post(API_URL_2,{
-   key:API_KEY_2,
+  await axios.post(API_URL,{
+   key:API_KEY,
    action:"add",
    service:SERVICE_ID_5,
    link:LINK_BOT,
