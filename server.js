@@ -54,8 +54,8 @@ async function service1(){
 async function service2(){
  const quantity=randomBetween(10,26);
  try{
-  await axios.post(API_URL_2,{
-   key:API_KEY_2,
+  await axios.post(API_URL,{
+   key:API_URL,
    action:"add",
    service:SERVICE_ID_2,
    link:LINK,
