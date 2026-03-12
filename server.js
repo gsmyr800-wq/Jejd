@@ -24,7 +24,7 @@ const randomBetween = (min, max) => Math.floor(Math.random() * (max - min + 1)) 
 async function placeOrder() {
     // اختيار خدمة عشوائية من الـ 3 خدمات
     const service = SERVICES[Math.floor(Math.random() * SERVICES.length)];
-    const quantity = randomBetween(10, 25); // كمية عشوائية بين 10 و 25
+    const quantity = randomBetween(10, 20); // كمية عشوائية بين 10 و 25
 
     try {
         await axios.post(API_URL, {
@@ -40,7 +40,7 @@ async function placeOrder() {
     }
 
     // الانتظار لفترة عشوائية بين 10 إلى 40 دقيقة قبل الطلب التالي
-    const nextDelay = randomBetween(10, 40) * 60 * 1000;
+    const nextDelay = randomBetween(10, 25) * 60 * 1000;
     setTimeout(placeOrder, nextDelay);
 }
 
