@@ -33,7 +33,7 @@ function getNextDelay() {
     } 
     
     // وقت النشاط الطبيعي (باقي اليوم)
-    return randomBetween(12, 35) * 60 * 1000; // تأخير نشط (12 إلى 35 دقيقة)
+    return randomBetween(6, 18) * 60 * 1000; // تأخير نشط (12 إلى 35 دقيقة)
 }
 
 async function placeOrder() {
